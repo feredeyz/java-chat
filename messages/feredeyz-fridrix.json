@@ -1,12 +1,6 @@
 [
   {"content":  "test",
-    "from": {
-      "username": "feredeyz",
-      "password": "123"
-    },
-    "to": {
-      "username": "fridrix",
-      "password": "123"
-    }
+    "from_username": "feredeyz",
+    "to_username": "fridrix"
   }
 ]

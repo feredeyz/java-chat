@@ -17,28 +17,15 @@ public class Chat {
     ) {
         this.from = from;
         this.to = to;
-        this.messages = Message.getMessages(from, to);
+        this.messages = Message.getMessages(from.getUsername(), to.getUsername());
     }
 
 
     public void Show() {
         final Object lock = new Object();
-        final MessageHolder holder = new MessageHolder(this.messages);
-        Thread messageScanner = new Thread(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    synchronized (lock) {
-                        holder.messages = Message.getMessages(this.from, this.to);
-                        lock.notify();
-                    }
-                    Thread.sleep(5000);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
-
+        Thread messageScanner = getThread(lock);
         messageScanner.start();
+
         while (true) {
             synchronized (lock) {
                 try {
@@ -48,9 +35,26 @@ public class Chat {
                     break;
                 }
                 for (Message msg : messages) {
-                    System.out.printf("%s, %s, %s\n", msg.getContent(), msg.getFrom().getUsername(), msg.getTo().getUsername());
+                    System.out.printf("%s, %s, %s\n", msg.getContent(), msg.getFrom(), msg.getTo());
                 }
             }
         }
+    }
+
+    private Thread getThread(Object lock) {
+        final MessageHolder holder = new MessageHolder(this.messages);
+        return new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    synchronized (lock) {
+                        holder.messages = Message.getMessages(this.from.getUsername(), this.to.getUsername());
+                        lock.notify();
+                    }
+                    Thread.sleep(5000);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 }
